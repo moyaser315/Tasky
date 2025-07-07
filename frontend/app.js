@@ -1,7 +1,6 @@
 // Configuration
-const API_URL = 'https://tasky-961y.onrender.com';
-// Remove hardcoded API_KEY
-// const API_KEY = '123456';
+// const API_URL = 'https://tasky-961y.onrender.com';
+const API_URL = 'http://localhost:8000'; // For local development
 
 // Global State
 let authToken = localStorage.getItem('authToken');
@@ -18,6 +17,8 @@ const registerForm = document.getElementById('registerForm');
 const taskForm = document.getElementById('taskForm');
 const tasksList = document.getElementById('tasksList');
 const refreshBtn = document.getElementById('refreshBtn');
+const taskDetailModal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+const taskDetailContent = document.getElementById('taskDetailContent');
 
 // Utility Functions
 function showAlert(message, type = 'danger') {
@@ -61,7 +62,6 @@ function showSpinner(spinnerId, show = true) {
 
 // API Functions
 async function apiCall(endpoint, options = {}) {
-
     const headers = {
         'Content-Type': 'application/json',
         ...options.headers
@@ -152,7 +152,7 @@ async function handleRegister(e) {
         // Save the API key
         localStorage.setItem('apiKey', response.api_key);
         
-        showAlert(`Registration successful! `, 'success');
+        showAlert('Registration successful!', 'success');
         
         // Switch to login tab
         const loginTab = document.querySelector('[href="#login"]');
@@ -231,7 +231,9 @@ function displayTasks(tasks) {
     }
 
     const tasksHtml = tasks.map(task => `
-        <div class="card task-card ${task.status === 'completed' ? 'border-success' : ''}" data-task-id="${task.id}">
+        <div class="card task-card ${task.status === 'completed' ? 'border-success' : ''}" 
+             data-task-id="${task.id}" 
+             onclick="showTaskDetails(${task.id})">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div class="flex-grow-1">
@@ -247,12 +249,12 @@ function displayTasks(tasks) {
                     </div>
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm ${task.status === 'completed' ? 'btn-warning' : 'btn-success'}" 
-                                onclick="toggleTask(${task.id}, '${task.status}')"
+                                onclick="event.stopPropagation(); toggleTask(${task.id}, '${task.status}')"
                                 title="${task.status === 'completed' ? 'Mark as pending' : 'Mark as completed'}">
                             <i class="bi ${task.status === 'completed' ? 'bi-arrow-counterclockwise' : 'bi-check-lg'}"></i>
                         </button>
                         <button class="btn btn-sm btn-danger" 
-                                onclick="deleteTask(${task.id})"
+                                onclick="event.stopPropagation(); deleteTask(${task.id})"
                                 title="Delete task">
                             <i class="bi bi-trash"></i>
                         </button>
@@ -263,6 +265,79 @@ function displayTasks(tasks) {
     `).join('');
 
     tasksList.innerHTML = tasksHtml;
+}
+
+async function showTaskDetails(taskId) {
+    try {
+        taskDetailContent.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading task details...</p>
+            </div>
+        `;
+        
+        taskDetailModal.show();
+        
+        const task = await apiCall(`/tasks/${taskId}`);
+        
+        const statusBadge = task.status === 'completed' 
+            ? '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Completed</span>'
+            : '<span class="badge bg-warning"><i class="bi bi-clock"></i> Pending</span>';
+        
+        taskDetailContent.innerHTML = `
+            <div class="task-detail">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="mb-0">Task Information</h6>
+                    ${statusBadge}
+                </div>
+                
+                <h4 class="mb-3">${escapeHtml(task.title)}</h4>
+                
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    <p class="mt-2">${escapeHtml(task.description)}</p>
+                </div>
+                
+                <div class="task-meta">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <strong>ID:</strong> ${task.id}
+                        </div>
+                        <div class="col-sm-6">
+                            <strong>Status:</strong> ${task.status}
+                        </div>
+                        <div class="col-sm-6">
+                            <strong>Created:</strong> ${formatDate(task.created_at)}
+                        </div>
+                        <div class="col-sm-6">
+                            <strong>Updated:</strong> ${formatDate(task.updated_at)}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn ${task.status === 'completed' ? 'btn-warning' : 'btn-success'}" 
+                            onclick="toggleTask(${task.id}, '${task.status}'); taskDetailModal.hide()">
+                        <i class="bi ${task.status === 'completed' ? 'bi-arrow-counterclockwise' : 'bi-check-lg'}"></i>
+                        ${task.status === 'completed' ? 'Mark as Pending' : 'Mark as Completed'}
+                    </button>
+                    <button class="btn btn-danger" 
+                            onclick="deleteTask(${task.id}); taskDetailModal.hide()">
+                        <i class="bi bi-trash"></i> Delete Task
+                    </button>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        taskDetailContent.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i>
+                Failed to load task details: ${error.message}
+            </div>
+        `;
+    }
 }
 
 async function toggleTask(taskId, currentStatus) {
@@ -304,7 +379,11 @@ function escapeHtml(text) {
 }
 
 function formatDate(dateString) {
-    const date = new Date(dateString);
+    // Handle null/undefined dates
+    if (!dateString) return 'No date';
+    
+    // Parse as UTC to avoid timezone issues
+    const date = new Date(dateString + (dateString.includes('Z') ? '' : 'Z'));
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
