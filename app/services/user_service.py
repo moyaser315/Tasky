@@ -42,13 +42,16 @@ class UserService:
     @staticmethod
     async def authenticate_user(form_data: OAuth2PasswordRequestForm, db: AsyncSession):
         result = await db.execute(
-            select(User).where(User.username == form_data.username)
+            select(User).where(
+                (User.username == form_data.username)
+                | (User.email == form_data.username)
+            )
         )
         user = result.scalars().first()
         if not user or not verify_password(form_data.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
+                detail="Incorrect username/email or password",
             )
         access_token = create_access_token(data={"user_id": user.id})
         return user, access_token
