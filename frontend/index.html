@@ -68,7 +68,6 @@
                                         <label for="regEmail" class="form-label">Email</label>
                                         <input type="email" class="form-control" id="regEmail" required>
                                     </div>
-
                                     <div class="mb-3">
                                         <label for="regPassword" class="form-label">Password</label>
                                         <input type="password" class="form-control" id="regPassword" required minlength="6">
@@ -124,6 +123,27 @@
                         </button>
                     </div>
                     <div id="tasksList">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div class="modal fade" id="taskDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Task Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="taskDetailContent">
                         <div class="text-center">
                             <div class="spinner-border" role="status">
                                 <span class="visually-hidden">Loading...</span>
