@@ -1,5 +1,5 @@
 // Configuration
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://tasky-961y.onrender.com';
 // Remove hardcoded API_KEY
 // const API_KEY = '123456';
 
