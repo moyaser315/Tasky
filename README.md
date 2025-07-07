@@ -24,12 +24,12 @@ Tasky is a FastAPI-based backend for a task management system, featuring secure 
    ```
 
 4. **Set environment variables (optional):**
-   - Make a .env file as follows:
+   - Make a .env file as follows, note that DB is used in asynchorous way when entering the url:
    ```sh
    SECRET_KEY=sssssssssssssss
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=120
-   DATABASE_URL=Your_Url_Here
+   DATABASE_URL=sqlite+aiosqlite:///tasks.db
    ```
 
 5. **Run the application:**
