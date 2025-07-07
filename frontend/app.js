@@ -60,6 +60,32 @@ function showSpinner(spinnerId, show = true) {
     }
 }
 
+// Helper function to format error messages
+function formatErrorMessage(error) {
+    if (typeof error === 'string') {
+        return error;
+    }
+    
+    if (error.detail) {
+        // Handle FastAPI validation errors
+        if (Array.isArray(error.detail)) {
+            return error.detail.map(err => {
+                if (err.msg && err.loc) {
+                    const field = err.loc[err.loc.length - 1];
+                    return `${field}: ${err.msg}`;
+                }
+                return err.msg || JSON.stringify(err);
+            }).join(', ');
+        } else if (typeof error.detail === 'string') {
+            return error.detail;
+        } else if (typeof error.detail === 'object') {
+            return JSON.stringify(error.detail);
+        }
+    }
+    
+    return error.message || 'An unknown error occurred';
+}
+
 // API Functions
 async function apiCall(endpoint, options = {}) {
     const headers = {
@@ -86,13 +112,19 @@ async function apiCall(endpoint, options = {}) {
         const data = text ? JSON.parse(text) : null;
 
         if (!response.ok) {
-            throw new Error(data?.detail || `Request failed: ${response.status}`);
+            const errorMessage = formatErrorMessage(data || { message: `Request failed: ${response.status}` });
+            throw new Error(errorMessage);
         }
 
         return data;
     } catch (error) {
         console.error('API Error:', error);
-        throw error;
+        // If it's already a formatted error, throw it as is
+        if (error.message) {
+            throw error;
+        }
+        // Otherwise format it
+        throw new Error(formatErrorMessage(error));
     }
 }
 
