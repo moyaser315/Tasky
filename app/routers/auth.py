@@ -6,32 +6,15 @@ from app.database import get_db
 from app.schemas.user import UserCreate, UserResponse, Token
 from app.models.user import User
 from app.utils.auth import get_password_hash, verify_password, create_access_token, generate_api_key
-
+from app.services.user_service import UserService
 router = APIRouter(tags=["authentication"])
 
 
 @router.post("/signup", response_model=UserResponse)
 async def signup(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
-    result = await db.execute(select(User).where(User.username == user.username))
-    if result.scalars().first():
-        raise HTTPException(status_code=400, detail="Username already registered")
     
-
-    result = await db.execute(select(User).where(User.email == user.email))
-    if result.scalars().first():
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    hashed_password = get_password_hash(user.password)
-    db_user = User(
-        username=user.username,
-        email=user.email,
-        hashed_password=hashed_password,
-        api_key=generate_api_key()  # Generate unique API key
-    )
-    db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
+    db_user = UserService.create_user(user,db)
     
     return db_user
 
