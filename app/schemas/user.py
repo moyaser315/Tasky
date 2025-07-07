@@ -13,11 +13,14 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    api_key: str
+
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+    api_key: str
 
 
 class TokenData(BaseModel):

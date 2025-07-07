@@ -5,37 +5,34 @@ from sqlalchemy import select
 from app.database import get_db
 from app.schemas.user import UserCreate, UserResponse, Token
 from app.models.user import User
-from app.utils.auth import get_password_hash, verify_password, create_access_token
+from app.utils.auth import get_password_hash, verify_password, create_access_token, generate_api_key
 
 router = APIRouter(tags=["authentication"])
 
 
-@router.post(
-    "/signup", status_code=status.HTTP_201_CREATED, response_model=UserResponse
-)
+@router.post("/signup", response_model=UserResponse)
 async def signup(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
     result = await db.execute(select(User).where(User.username == user.username))
     if result.scalars().first():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered",
-        )
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
 
     result = await db.execute(select(User).where(User.email == user.email))
     if result.scalars().first():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered"
-        )
-
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
     hashed_password = get_password_hash(user.password)
     db_user = User(
-        username=user.username, email=user.email, hashed_password=hashed_password
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password,
+        api_key=generate_api_key()  # Generate unique API key
     )
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
-
+    
     return db_user
 
 
@@ -43,7 +40,6 @@ async def signup(user: UserCreate, db: AsyncSession = Depends(get_db)):
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
 ):
-
     result = await db.execute(select(User).where(User.username == form_data.username))
     user = result.scalars().first()
 
@@ -54,4 +50,8 @@ async def login(
         )
 
     access_token = create_access_token(data={"user_id": user.id})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        api_key=user.api_key
+    )
