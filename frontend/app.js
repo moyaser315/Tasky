@@ -1,6 +1,6 @@
 // Configuration
-// const API_URL = 'https://tasky-961y.onrender.com';
-const API_URL = 'http://localhost:8000'; // For local development
+const API_URL = 'https://tasky-961y.onrender.com';
+// const API_URL = 'http://localhost:8000'; // For local development
 
 // Global State
 let authToken = localStorage.getItem('authToken');
