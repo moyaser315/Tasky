@@ -5,7 +5,7 @@ from datetime import datetime
 class TaskBase(BaseModel):
     title: str
     description: str
-    status: str = "pending"  # "pending" or "completed"
+    status: str = "pending"
 
 
 class TaskCreate(TaskBase):
