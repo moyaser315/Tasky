@@ -24,7 +24,7 @@ Tasky is a FastAPI-based backend for a task management system, featuring secure 
    ```
 
 4. **Set environment variables (optional):**
-   - make a .env file as follow
+   - Make a .env file as follows:
    ```sh
    SECRET_KEY=sssssssssssssss
    ALGORITHM=HS256
@@ -43,56 +43,58 @@ Tasky is a FastAPI-based backend for a task management system, featuring secure 
 
 ---
 
-## 👤 How to Create a User and Login
+## Calling APIs
 
 ### 1. Sign Up
 
-  
-     ```json
-   curl -X POST "http://localhost:8000/signup" \
-         -H "Content-Type: application/json" \
-         -d '{
-            "username": "user",
-            "email": "user@example.com",
-            "password": "SecurePassword123"
-         }'
-     ```
-**Response**
-   ```json
-   {
-      "id": 1,
-      "email": "user@example.com",
-      "api_key": "your-api-key-here"
-   }
-   ```
+```bash
+curl -X POST "http://localhost:8000/signup" \
+     -H "Content-Type: application/json" \
+     -d '{
+        "username": "user",
+        "email": "user@example.com",
+        "password": "SecurePassword123"
+     }'
+```
 
-### Login
+**Response:**
+```json
+{
+   "id": 1,
+   "email": "user@example.com",
+   "api_key": "your-api-key-here"
+}
+```
 
-     ```
-      curl -X POST "http://localhost:8000/token" \
-      -H "Content-Type: application/x-www-form-urlencoded" \
-      -d "username=user@example.com&password=SecurePassword123"
-     ```
-**Response**
-     ```json
-         {
-         "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-         "token_type": "bearer",
-         "api_key": "your-api-key-here"
-         }
-     ```
+### 2. Login
+
+```bash
+curl -X POST "http://localhost:8000/token" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -d "username=user@example.com&password=SecurePassword123"
+```
+
+**Response:**
+```json
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer",
+    "api_key": "your-api-key-here"
+}
+```
+
 ### 3. Create a Task
 
 ```bash
 curl -X POST "http://localhost:8000/tasks/" \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Complete project documentation",
-    "description": "Write comprehensive README and API documentation",
-    "status": "pending"
-  }'
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "X-API-Key: YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "title": "Complete project documentation",
+       "description": "Write comprehensive README and API documentation",
+       "status": "pending"
+     }'
 ```
 
 **Response:**
@@ -147,20 +149,21 @@ curl -X PUT "http://localhost:8000/tasks/1" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
      -H "Content-Type: application/json" \
      -d '{
-    "status": "completed"
-  }'
+       "status": "completed"
+     }'
 ```
 
 ### 7. Delete a Task
 
 ```bash
 curl -X DELETE "http://localhost:8000/tasks/1" \
-     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-     -H "X-API-Key: YOUR_API_KEY" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "X-API-Key: YOUR_API_KEY"
 ```
+
 ---
 
-## 🔐 Example: JWT + API Key Authentication
+## Example: JWT + API Key Authentication
 
 All `/tasks` endpoints require:
 - **Authorization**: Bearer token 
@@ -168,23 +171,20 @@ All `/tasks` endpoints require:
 
 ---
 
-## 📚 API Documentation
+## API Documentation
 
 - **POST /signup** – Register a new user
 - **POST /token** – Obtain JWT token (OAuth2 password flow)
 - **POST /tasks** – Create a new task (protected)
 - **GET /tasks** – List all tasks for the current user (protected)
 - **GET /tasks/{id}** – Get a specific task (protected)
-- **PUT /tasks/{id}** – Update a task’s status (protected)
+- **PUT /tasks/{id}** – Update a task's status (protected)
 - **DELETE /tasks/{id}** – Delete a task (protected)
 
 See [http://localhost:8000/docs](http://localhost:8000/docs) for full interactive API docs.
 
 ---
 
-## 🌐 Live Deployment
+## Live Deployment
 
-- [Live API URL](https://tasky-sable.vercel.app/)
-
-
-
+- [Live URL](https://tasky-sable.vercel.app/)
