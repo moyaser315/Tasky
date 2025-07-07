@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 class UserBase(BaseModel):
     username: str
     email: EmailStr
-    phone_number: str | None = None
+
 
 class UserCreate(UserBase):
     password: str
