@@ -1,9 +1,11 @@
 // Configuration
 const API_URL = 'http://localhost:8000';
-const API_KEY = '123456';
+// Remove hardcoded API_KEY
+// const API_KEY = '123456';
 
 // Global State
 let authToken = localStorage.getItem('authToken');
+let apiKey = localStorage.getItem('apiKey');
 let currentUser = localStorage.getItem('username');
 
 // DOM Elements
@@ -59,11 +61,16 @@ function showSpinner(spinnerId, show = true) {
 
 // API Functions
 async function apiCall(endpoint, options = {}) {
+
     const headers = {
         'Content-Type': 'application/json',
-        'X-API-Key': API_KEY,
         ...options.headers
     };
+
+    // Add API key if available and not auth endpoints
+    if (apiKey && endpoint !== '/signup' && endpoint !== '/token') {
+        headers['X-API-Key'] = apiKey;
+    }
 
     if (authToken && endpoint !== '/signup' && endpoint !== '/token') {
         headers['Authorization'] = `Bearer ${authToken}`;
@@ -109,7 +116,13 @@ async function handleLogin(e) {
         currentUser = document.getElementById('loginUsername').value;
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('username', currentUser);
-        
+
+        // Save the API key from login response
+        if (data.api_key) {
+            apiKey = data.api_key;
+            localStorage.setItem('apiKey', data.api_key);
+        }
+
         showAlert('Login successful! Welcome back!', 'success');
         showSection('tasks');
         loginForm.reset();
@@ -131,12 +144,15 @@ async function handleRegister(e) {
     };
 
     try {
-        await apiCall('/signup', {
+        const response = await apiCall('/signup', {
             method: 'POST',
             body: JSON.stringify(userData)
         });
 
-        showAlert('Registration successful! Please login.', 'success');
+        // Save the API key
+        localStorage.setItem('apiKey', response.api_key);
+        
+        showAlert(`Registration successful! `, 'success');
         
         // Switch to login tab
         const loginTab = document.querySelector('[href="#login"]');
@@ -158,8 +174,10 @@ async function handleRegister(e) {
 
 function handleLogout() {
     authToken = null;
+    apiKey = null;
     currentUser = null;
     localStorage.removeItem('authToken');
+    localStorage.removeItem('apiKey');
     localStorage.removeItem('username');
     showSection('auth');
     showAlert('Logged out successfully', 'info');

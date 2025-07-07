@@ -10,5 +10,6 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+    api_key = Column(String, unique=True, index=True, nullable=False)
 
     tasks = relationship("Task", back_populates="owner", cascade="all, delete-orphan")
