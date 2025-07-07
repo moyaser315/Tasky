@@ -1,6 +1,6 @@
 # Tasky – Backend
 
-Tasky is a FastAPI-based backend for a task management system, featuring secure authentication (JWT + API Key), async endpoints, and a clean, modular architecture.
+Tasky is a FastAPI-based backend for a task management system, featuring secure authentication, async endpoints, and a clean, modular architecture.
 
 ---
 
@@ -8,7 +8,7 @@ Tasky is a FastAPI-based backend for a task management system, featuring secure 
 
 1. **Clone the repository:**
    ```sh
-   git clone <your-repo-url>
+   git clone https://github.com/moyaser315/Tasky.git
    cd tasky
    ```
 
@@ -24,7 +24,13 @@ Tasky is a FastAPI-based backend for a task management system, featuring secure 
    ```
 
 4. **Set environment variables (optional):**
-   - Edit `app/config.py` or set variables for `SECRET_KEY`, `ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`, and `API_KEY` as needed.
+   - make a .env file as follow
+   ```sh
+   SECRET_KEY=sssssssssssssss
+   ALGORITHM=HS256
+   ACCESS_TOKEN_EXPIRE_MINUTES=120
+   DATABASE_URL=Your_Url_Here
+   ```
 
 5. **Run the application:**
    ```sh
@@ -39,46 +45,126 @@ Tasky is a FastAPI-based backend for a task management system, featuring secure 
 
 ## 👤 How to Create a User and Login
 
-1. **Sign Up**
-   - `POST /signup`
-   - Body:
-     ```json
-     {
-       "username": "your_username",
-       "email": "your_email",
-       "password": "your_password"
-     }
-     ```
+### 1. Sign Up
 
-2. **Login**
-   - `POST /token`
-   - Body (form data):
-     ```
-     username=your_username
-     password=your_password
-     ```
-   - Response:
+  
      ```json
-     {
-       "access_token": "<JWT_TOKEN>",
-       "token_type": "bearer"
-     }
+   curl -X POST "http://localhost:8000/signup" \
+         -H "Content-Type: application/json" \
+         -d '{
+            "username": "user",
+            "email": "user@example.com",
+            "password": "SecurePassword123"
+         }'
      ```
+**Response**
+   ```json
+   {
+      "id": 1,
+      "email": "user@example.com",
+      "api_key": "your-api-key-here"
+   }
+   ```
 
+### Login
+
+     ```
+      curl -X POST "http://localhost:8000/token" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "username=user@example.com&password=SecurePassword123"
+     ```
+**Response**
+     ```json
+         {
+         "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+         "token_type": "bearer",
+         "api_key": "your-api-key-here"
+         }
+     ```
+### 3. Create a Task
+
+```bash
+curl -X POST "http://localhost:8000/tasks/" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Complete project documentation",
+    "description": "Write comprehensive README and API documentation",
+    "status": "pending"
+  }'
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "title": "Complete project documentation",
+  "description": "Write comprehensive README and API documentation",
+  "status": "pending",
+  "user_id": 1,
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": null
+}
+```
+
+### 4. Get All Tasks
+
+```bash
+curl -X GET "http://localhost:8000/tasks/" \
+     -H "X-API-Key: YOUR_API_KEY" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "title": "Complete project documentation",
+    "description": "Write comprehensive README and API documentation",
+    "status": "pending",
+    "user_id": 1,
+    "created_at": "2024-01-15T10:30:00Z",
+    "updated_at": null
+  }
+]
+```
+
+### 5. Get a Specific Task
+
+```bash
+curl -X GET "http://localhost:8000/tasks/1" \
+     -H "X-API-Key: YOUR_API_KEY" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### 6. Update a Task
+
+```bash
+curl -X PUT "http://localhost:8000/tasks/1" \
+     -H "X-API-Key: YOUR_API_KEY" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{
+    "status": "completed"
+  }'
+```
+
+### 7. Delete a Task
+
+```bash
+curl -X DELETE "http://localhost:8000/tasks/1" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+     -H "X-API-Key: YOUR_API_KEY" \
+```
 ---
 
 ## 🔐 Example: JWT + API Key Authentication
 
 All `/tasks` endpoints require:
-- **Authorization**: Bearer token (from `/token`)
-- **Header**: `X-API-Key: 123456` (or your configured API key)
-
-**Example request:**
-```sh
-curl -X GET "http://localhost:8000/tasks" \
-  -H "Authorization: Bearer <JWT_TOKEN>" \
-  -H "X-API-Key: 123456"
-```
+- **Authorization**: Bearer token 
+- **Header**: `X-API-Key: 123456` 
 
 ---
 
@@ -98,7 +184,7 @@ See [http://localhost:8000/docs](http://localhost:8000/docs) for full interactiv
 
 ## 🌐 Live Deployment
 
-- [Live API URL](https://your-deployment-url.com)
+- [Live API URL](https://tasky-sable.vercel.app/)
 
 
 
